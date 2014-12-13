@@ -6,14 +6,14 @@ build :- boot, kernel.
 
 % The rule used to build NASM assembly files
 nasm(Out, In, Args, Extra) :-
-	lwrite([' nasm ', Out]),
 	remake3(Out, In, Extra),
+	lwrite([' nasm ', Out]),
 	lshell(['nasm -o ', Out, ' ', In, ' ', Args]).
 
 % The rule used to build C files
 cc(Out, In, Args, [Extra]) :-
-	lwrite([' cc ', Out]),
 	remake3(Out, In, Extra),
+	lwrite([' cc ', Out]),
 	lshell(['cc -o ', Out, ' ', In, ' ', Args]).
 
 % Adds a prefix to each string in the list
@@ -45,17 +45,24 @@ lshell(Ls) :-
 	shell(Cmd).
 
 % This will return true if What needs to be remade with respect to the given file list
-remake(_, []).
-remake(Than, _) :- \+ exists_file(Than).
-remake(Than, [File | Rest]) :-
-	exists_file(File),
-	set_time_file(File, [modified(Newer)], []),
-	set_time_file(Than, [modified(Older)], []),
-	Newer < Older;
-	remake(Rest, Than).
+remake(Obj, _) :-
+	\+ exists(Obj).
+remake(Obj, [D | Deps]) :-
+	\+ exists(D);
+	newer(D, Obj);
+	remake(Obj, Deps).
 
 % Convience predicate that wraps to remake
 remake3(Out, In, Extra) :-
 	append(Extra, [In], Deps),
 	remake(Out, Deps).
 
+% True if file A is newer (modified) than file B
+newer(A, B) :-
+	set_time_file(A, [modified(C)], []),
+	set_time_file(B, [modified(D)], []),
+	C > D.
+
+% Returns true if F is a file or directory that exists
+exists(F) :- exists_file(F).
+exists(F) :- exists_directory(F).
