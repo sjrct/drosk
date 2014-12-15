@@ -1,20 +1,53 @@
 :- use_module(library(filesex)).
 :- [boot/main, kernel/main].
 
-% The predicate that builds the system
-build :- boot, kernel.
+% The top level target predicates
+build :- build(boot), build(kernel).
+clean :- clean(boot), clean(kernel).
+
+build(T) :-
+	\+ call(T, build_dep).
+build(T) :-
+	call(T, build_dep),
+	lwrite(['Building ', T]),
+	call(T, build).
+
+clean(T) :-
+	\+ call(T, clean_dep).
+clean(T) :-
+	call(T, clean_dep),
+	lwrite(['Cleaning ', T]),
+	call(T, clean).
 
 % The rule used to build NASM assembly files
-nasm(Out, In, Args, Extra) :-
-	remake3(Out, In, Extra),
+nasm(build_dep, Out, In, _, Extra) :-
+	remake3(Out, In, Extra).
+
+nasm(build, Out, In, Args, _) :-
 	lwrite([' nasm ', Out]),
 	lshell(['nasm -o ', Out, ' ', In, ' ', Args]).
 
+nasm(clean_dep, Out, _, _, _) :-
+	exists_file(Out).
+
+nasm(clean, Out, _, _, _) :-
+	lwrite([' rm ', Out]),
+	rm(Out).
+
 % The rule used to build C files
-cc(Out, In, Args, [Extra]) :-
-	remake3(Out, In, Extra),
+cc(build_dep, Out, In, _, Extra) :-
+	remake3(Out, In, Extra).
+
+cc(build, Out, In, Args, _) :-
 	lwrite([' cc ', Out]),
 	lshell(['cc -o ', Out, ' ', In, ' ', Args]).
+
+cc(clean_dep, Out, _, _, _) :-
+	exists_file(Out).
+
+cc(clean, Out, _, _, _) :-
+	lwrite([' rm ', Out]),
+	rm(Out).
 
 % Adds a prefix to each string in the list
 prefix(_, [], []).

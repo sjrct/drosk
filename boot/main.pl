@@ -1,5 +1,4 @@
-boot :-
-	writeln('Building boot'),
+boot(T) :-
 	prefix('boot/src/', [
 		'leftovers.inc',
 		'before/error16.inc',
@@ -10,5 +9,5 @@ boot :-
 		'after/gdt.inc',
 		'after/graphics.inc'
 	], Extra),
-	nasm('boot/boot.bin', 'boot/src/boot.asm', '-fbin -Iinclude/boot/ -Iboot/src/', Extra).
+	nasm(T, 'boot/boot.bin', 'boot/src/boot.asm', '-fbin -Iinclude/boot/ -Iboot/src/', Extra).
 
