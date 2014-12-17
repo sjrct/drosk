@@ -22,7 +22,7 @@ clean :- writeln('not ok :(').
 % The predicates for target operations, do dep check first
 build(T) :- \+ call(T, build_dep), !.
 build(T) :- call(T, build_dep), lwrite(['building ', T]), call(T, build), !.
-build(T) :-	lwrite(['failed to build ', T]), false.
+build(T) :- lwrite(['failed to build ', T]), false.
 
 clean(T) :- \+ call(T, clean_dep), !.
 clean(T) :- call(T, clean_dep), lwrite(['cleaning ', T]), call(T, clean), !.
@@ -37,7 +37,7 @@ phr_dep(Cs) --> string(Cs), (" " ; "\n"), !.
 phr_deps([D | Ds]) --> phr_ign, phr_dep(D), phr_deps(Ds), !.
 phr_deps([])       --> [].
 
-% Give this predicate a stream and it will phrase out a dependcy list
+% Give this predicate a stream and it will phrase out a dependency list
 dep_list(S, D) :-
 	read_stream_to_codes(S, Codes),
 	phrase(phr_deps(B), Codes, []),
